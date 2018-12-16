@@ -1,10 +1,10 @@
 name:                aoc-dev
 version:             0.1.0.0
-github:              "mstksg/advent-of-code-dev"
+github:              "tocklime/advent-of-code-dev"
 license:             BSD3
-author:              "Justin Le"
-maintainer:          "justin@jle.im"
-copyright:           "(c) Justin Le 2018"
+author:              "Greg Manning"
+maintainer:          ""
+copyright:           "Framework (c) Justin Le 2018"
 
 extra-source-files:
 - README.md
@@ -97,7 +97,7 @@ library:
   - yaml
 
 executables:
-  aoc-dev:
+  aoc-dev-2018:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
