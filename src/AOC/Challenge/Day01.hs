@@ -1,21 +1,23 @@
-module AOC.Challenge.Day01 (
-     day01a
-   , day01b
+module AOC.Challenge.Day01
+  ( day01a
+  , day01b
   ) where
 
-import           AOC.Solver ((:~>)(..))
 import           AOC.Common
+import           AOC.Solver ((:~>) (..))
 
 day01a :: [Int] :~> Int
-day01a = MkSol
-    { sParse = Just . map read . words . filter (/= '+') 
-    , sShow  = show 
-    , sSolve = Just . sum 
+day01a =
+  MkSol
+    { sParse = Just . map read . words . filter (/= '+')
+    , sShow = show
+    , sSolve = Just . sum
     }
 
 day01b :: [Int] :~> Int
-day01b = MkSol
+day01b =
+  MkSol
     { sParse = Just . map read . words . filter (/= '+')
-    , sShow  = show
+    , sShow = show
     , sSolve = findFirstDup . scanl (+) 0 . cycle
     }

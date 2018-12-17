@@ -95,6 +95,7 @@ library:
   - time
   - transformers
   - yaml
+  - array
 
 executables:
   aoc-dev-2018:

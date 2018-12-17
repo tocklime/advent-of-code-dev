@@ -1,43 +1,77 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
--- |
--- Module      : AOC.Challenge.Day04
--- License     : BSD3
---
--- Stability   : experimental
--- Portability : non-portable
---
--- Day 4.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
-
-module AOC.Challenge.Day04 (
-    -- day04a
-  -- , day04b
+module AOC.Challenge.Day04
+  ( day04a
+  , day04b
   ) where
 
-import           AOC.Prelude
+import           AOC.Common
+import           AOC.Solver           ((:~>) (..))
+import           Control.Applicative  ((<|>))
+import           Control.Arrow        ((&&&))
+import           Data.List            (group, maximumBy, sort)
+import qualified Data.Map.Strict      as M
+import           Data.Ord             (comparing)
+import           Data.Time
+import           Text.Megaparsec      (many, parseMaybe)
+import           Text.Megaparsec.Char (char)
 
-day04a :: _ :~> _
-day04a = MkSol
-    { sParse = Just
-    , sShow  = id
-    , sSolve = Just
+data Action
+  = GuardStart Int
+  | FallsAsleep
+  | Wakes
+  deriving (Show, Eq, Ord)
+
+type Line = (UTCTime, Action)
+
+type Shift = (Int, [Int])
+
+toShifts :: [Line] -> [Shift]
+toShifts ls = map mkShift brokenUp
+  where
+    mins = todMin . timeToTimeOfDay . utctDayTime
+    brokenUp = breakOn (isStart . snd) ls
+    isStart (GuardStart _) = True
+    isStart _              = False
+    mkShift ((_, GuardStart i):rest) = (i, concatMap mkNap $ asPairs rest)
+    mkShift _                        = error "No guardstart"
+    mkNap ((t1, FallsAsleep), (t2, Wakes)) = [mins t1 .. (mins t2 - 1)]
+    mkNap _                                = []
+
+parseProb :: Parser [Line]
+parseProb = Text.Megaparsec.many line
+  where
+    guardStart =
+      GuardStart <$> (symbol "Guard #" *> integer <* symbol "begins shift")
+    asleep = const FallsAsleep <$> symbol "falls asleep"
+    wakes = const Wakes <$> symbol "wakes up"
+    line =
+      (,) <$> (char '[' *> time <* symbol "]") <*>
+      (guardStart <|> asleep <|> wakes)
+
+solvePartA :: [Shift] -> Int
+solvePartA shifts = sleepiestGuard * minute
+  where
+    bg = M.fromListWith (++) shifts
+    sleepiestGuard = fst . maximumBy (comparing (length . snd)) . M.toList $ bg
+    gNaps = bg M.! sleepiestGuard
+    minute = snd . maximum . map (length &&& head) . group . sort $ gNaps
+
+day04a :: [Shift] :~> Int
+day04a =
+  MkSol
+    { sParse = fmap (toShifts . sort) <$> parseMaybe parseProb
+    , sShow = show
+    , sSolve = Just . solvePartA
     }
 
-day04b :: _ :~> _
-day04b = MkSol
-    { sParse = Just
-    , sShow  = id
-    , sSolve = Just
+solvePartB :: [Shift] -> Int
+solvePartB shifts =
+  uncurry (*) . head . maximumBy (comparing length) . group . sort $
+  [(m, g) | (g, ns) <- shifts, m <- ns]
+
+day04b :: [Shift] :~> Int
+day04b =
+  MkSol
+    { sParse = fmap (toShifts . sort) <$> parseMaybe parseProb
+    , sShow = show
+    , sSolve = Just . solvePartB
     }
