@@ -3,10 +3,9 @@ module AOC.Challenge.Day02
   , day02b
   ) where
 
-import           AOC.Common
-import           AOC.Solver ((:~>) (..))
-import           Data.Bool  (bool)
-import           Data.List  (group, sort)
+import           AOC.MinimalPrelude
+import           Data.Bool          (bool)
+import           Data.List          (group, sort)
 
 data Line =
   Line Int

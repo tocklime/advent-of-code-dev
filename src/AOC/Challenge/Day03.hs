@@ -3,8 +3,7 @@ module AOC.Challenge.Day03
   , day03b
   ) where
 
-import           AOC.Common
-import           AOC.Solver         ((:~>) (..))
+import           AOC.MinimalPrelude
 import           Control.Monad      (forM, forM_, when)
 import           Control.Monad.ST   (ST, runST)
 import           Data.Array.ST      (STArray, STUArray, newArray, readArray,
@@ -12,7 +11,6 @@ import           Data.Array.ST      (STArray, STUArray, newArray, readArray,
 import qualified Data.Array.Unboxed as A
 import qualified Data.Set           as S
 import           Data.STRef         (modifySTRef', newSTRef, readSTRef)
-import           Text.Megaparsec    (many, parseMaybe)
 
 data Claim = Claim
   { claimId :: Int
@@ -22,13 +20,12 @@ data Claim = Claim
   , height  :: Int
   } deriving (Show, Eq, Ord)
 
-parseProb :: Parser [Claim]
-parseProb = Text.Megaparsec.many claim
+parseProb :: Parser Claim
+parseProb =
+  Claim <$> symInt "#" <*> symInt "@" <*> symInt "," <*> symInt ":" <*>
+  symInt "x"
   where
-    symInt x = symbol x *> (fromIntegral <$> integer)
-    claim =
-      Claim <$> symInt "#" <*> symInt "@" <*> symInt "," <*> symInt ":" <*>
-      symInt "x"
+    symInt x = symbol x *> integer :: Parser Int
 
 covers :: Claim -> [(Int, Int)]
 covers (Claim _ l t w h) =
@@ -67,7 +64,7 @@ findDisconnected cs =
 day03a :: [Claim] :~> Int
 day03a =
   MkSol
-    { sParse = parseMaybe parseProb
+    { sParse = parseManyMaybe parseProb
     , sShow = show
     , sSolve = Just . countOverused . toSheet
     }
@@ -75,7 +72,7 @@ day03a =
 day03b :: [Claim] :~> Int
 day03b =
   MkSol
-    { sParse = parseMaybe parseProb
+    { sParse = parseManyMaybe parseProb
     , sShow = show
     , sSolve = getOnly . map claimId . findDisconnected
     }

@@ -3,8 +3,8 @@ module AOC.Challenge.Day01
   , day01b
   ) where
 
-import           AOC.Common
-import           AOC.Solver ((:~>) (..))
+import           AOC.MinimalPrelude
+import           AOC.Solver         ((:~>) (..))
 
 day01a :: [Int] :~> Int
 day01a =

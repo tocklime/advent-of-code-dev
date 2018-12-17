@@ -18,6 +18,12 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
+parseMaybe :: Parser a -> String -> Maybe a
+parseMaybe = Text.Megaparsec.parseMaybe
+
+parseManyMaybe :: Parser a -> String -> Maybe [a]
+parseManyMaybe = Text.Megaparsec.parseMaybe . Text.Megaparsec.many
+
 findFirstDup :: (Ord a) => [a] -> Maybe a
 findFirstDup = go S.empty
   where
@@ -37,8 +43,8 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser ()
 symbol = void <$> L.symbol sc
 
-integer :: Num a => Parser a
-integer = fromIntegral <$> lexeme L.decimal
+integer :: Integral a => Parser a
+integer = lexeme (L.signed sc L.decimal)
 
 time :: Parser UTCTime
 time = do
@@ -46,11 +52,11 @@ time = do
   char '-'
   month <- L.decimal
   char '-'
-  day <- L.decimal
+  day <- L.decimal :: Parser Int
   char ' '
-  hour <- L.decimal
+  hour <- L.decimal :: Parser Int
   char ':'
-  minute <- L.decimal
+  minute <- L.decimal :: Parser Int
   let date = fromGregorian year month day
   return $ UTCTime date (fromIntegral $ (hour * 60 + minute) * 60)
 

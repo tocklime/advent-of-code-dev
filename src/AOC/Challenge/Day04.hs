@@ -3,15 +3,13 @@ module AOC.Challenge.Day04
   , day04b
   ) where
 
-import           AOC.Common
-import           AOC.Solver           ((:~>) (..))
+import           AOC.MinimalPrelude
 import           Control.Applicative  ((<|>))
 import           Control.Arrow        ((&&&))
 import           Data.List            (group, maximumBy, sort)
 import qualified Data.Map.Strict      as M
 import           Data.Ord             (comparing)
 import           Data.Time
-import           Text.Megaparsec      (many, parseMaybe)
 import           Text.Megaparsec.Char (char)
 
 data Action
@@ -36,16 +34,14 @@ toShifts ls = map mkShift brokenUp
     mkNap ((t1, FallsAsleep), (t2, Wakes)) = [mins t1 .. (mins t2 - 1)]
     mkNap _                                = []
 
-parseProb :: Parser [Line]
-parseProb = Text.Megaparsec.many line
+parseProb :: Parser Line
+parseProb =
+  (,) <$> (char '[' *> time <* symbol "]") <*> (guardStart <|> asleep <|> wakes)
   where
     guardStart =
       GuardStart <$> (symbol "Guard #" *> integer <* symbol "begins shift")
     asleep = const FallsAsleep <$> symbol "falls asleep"
     wakes = const Wakes <$> symbol "wakes up"
-    line =
-      (,) <$> (char '[' *> time <* symbol "]") <*>
-      (guardStart <|> asleep <|> wakes)
 
 solvePartA :: [Shift] -> Int
 solvePartA shifts = sleepiestGuard * minute
@@ -58,7 +54,7 @@ solvePartA shifts = sleepiestGuard * minute
 day04a :: [Shift] :~> Int
 day04a =
   MkSol
-    { sParse = fmap (toShifts . sort) <$> parseMaybe parseProb
+    { sParse = fmap (toShifts . sort) <$> parseManyMaybe parseProb
     , sShow = show
     , sSolve = Just . solvePartA
     }
@@ -71,7 +67,7 @@ solvePartB shifts =
 day04b :: [Shift] :~> Int
 day04b =
   MkSol
-    { sParse = fmap (toShifts . sort) <$> parseMaybe parseProb
+    { sParse = fmap (toShifts . sort) <$> parseManyMaybe parseProb
     , sShow = show
     , sSolve = Just . solvePartB
     }
