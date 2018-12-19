@@ -64,7 +64,7 @@ findDisconnected cs =
 day03a :: [Claim] :~> Int
 day03a =
   MkSol
-    { sParse = parseManyMaybe parseProb
+    { sParse = parseManyEither parseProb
     , sShow = show
     , sSolve = Just . countOverused . toSheet
     }
@@ -72,7 +72,7 @@ day03a =
 day03b :: [Claim] :~> Int
 day03b =
   MkSol
-    { sParse = parseManyMaybe parseProb
+    { sParse = parseManyEither parseProb
     , sShow = show
     , sSolve = getOnly . map claimId . findDisconnected
     }

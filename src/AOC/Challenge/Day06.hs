@@ -23,7 +23,7 @@ inputParser = (,) <$> integer <* symbol "," <*> integer
 day06a :: [Coord] :~> Int
 day06a =
   MkSol
-    { sParse = parseManyMaybe inputParser
+    { sParse = parseManyEither inputParser
     , sShow = show
     , sSolve = Just . biggestRegion
     }
@@ -31,7 +31,7 @@ day06a =
 day06b :: [Coord] :~> Int
 day06b =
   MkSol
-    { sParse = parseManyMaybe inputParser
+    { sParse = parseManyEither inputParser
     , sShow = show
     , sSolve = Just . nearMost
     }

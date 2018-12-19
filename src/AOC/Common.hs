@@ -10,19 +10,22 @@
 --
 module AOC.Common where
 
+import           Control.Arrow              (first, left, second)
 import           Control.Monad              (void)
+import qualified Data.Map.Strict            as M
 import qualified Data.Set                   as S
 import           Data.Time
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
+import           Text.Megaparsec.Error      (errorBundlePretty)
 
-parseMaybe :: Parser a -> String -> Maybe a
-parseMaybe = Text.Megaparsec.parseMaybe
+parseEither :: Parser a -> String -> Either String a
+parseEither p i = left errorBundlePretty $ Text.Megaparsec.parse p "Input" i
 
-parseManyMaybe :: Parser a -> String -> Maybe [a]
-parseManyMaybe = Text.Megaparsec.parseMaybe . Text.Megaparsec.many
+parseManyEither :: Parser a -> String -> Either String [a]
+parseManyEither p = parseEither (Text.Megaparsec.many p)
 
 findFirstDup :: (Ord a) => [a] -> Maybe a
 findFirstDup = go S.empty
@@ -76,3 +79,48 @@ breakOn p (x:xs)
     let (a, b) = break p xs
      in (x : a) : breakOn p b
   | otherwise = breakOn p xs
+
+newtype AsciiPoint = AsciiPoint
+  { unAsciiPoint :: (Int, Int)
+  } deriving (Eq)
+
+instance Ord AsciiPoint where
+  compare (AsciiPoint (x, y)) (AsciiPoint (x', y')) = compare (y, x) (y', x')
+
+instance Show AsciiPoint where
+  show (AsciiPoint (x, y)) = show x <> "," <> show y
+
+data Direction
+  = North
+  | East
+  | South
+  | West
+  deriving (Show)
+
+movePoint :: Direction -> AsciiPoint -> AsciiPoint
+movePoint North = AsciiPoint . second pred . unAsciiPoint
+movePoint South = AsciiPoint . second succ . unAsciiPoint
+movePoint East  = AsciiPoint . first succ . unAsciiPoint
+movePoint West  = AsciiPoint . first pred . unAsciiPoint
+
+turnRight :: Direction -> Direction
+turnRight North = East
+turnRight East  = South
+turnRight South = West
+turnRight West  = North
+
+turnLeft :: Direction -> Direction
+turnLeft = turnRight . turnRight . turnRight
+
+turnAbout :: Direction -> Direction
+turnAbout = turnRight . turnRight
+
+asciiArtGrid :: (Char -> Maybe a) -> String -> M.Map AsciiPoint a
+asciiArtGrid f s = M.mapMaybe f cells
+  where
+    cells =
+      M.fromList
+        [ (AsciiPoint (x, y), c)
+        | (y, line) <- zip [0 ..] $ lines s
+        , (x, c) <- zip [0 ..] line
+        ]

@@ -96,6 +96,7 @@ library:
   - transformers
   - yaml
   - array
+  - safe
 
 executables:
   aoc-dev-2018:

@@ -54,7 +54,7 @@ solvePartA shifts = sleepiestGuard * minute
 day04a :: [Shift] :~> Int
 day04a =
   MkSol
-    { sParse = fmap (toShifts . sort) <$> parseManyMaybe parseProb
+    { sParse = fmap (toShifts . sort) <$> parseManyEither parseProb
     , sShow = show
     , sSolve = Just . solvePartA
     }
@@ -67,7 +67,7 @@ solvePartB shifts =
 day04b :: [Shift] :~> Int
 day04b =
   MkSol
-    { sParse = fmap (toShifts . sort) <$> parseManyMaybe parseProb
+    { sParse = fmap (toShifts . sort) <$> parseManyEither parseProb
     , sShow = show
     , sSolve = Just . solvePartB
     }

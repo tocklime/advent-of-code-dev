@@ -1,48 +1,31 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
--- |
--- Module      : AOC.Challenge.Day11
--- License     : BSD3
---
--- Stability   : experimental
--- Portability : non-portable
---
--- Day 11.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 module AOC.Challenge.Day11
   ( day11a
   , day11b
   ) where
 
-import           AOC.Prelude
-import qualified Data.Array    as A
-import           Data.Array.ST (newArray, readArray, runSTArray, writeArray)
+import           AOC.MinimalPrelude
+import           Control.Monad      (forM_)
+import qualified Data.Array         as A
+import           Data.Array.ST      (newArray, readArray, runSTArray,
+                                     writeArray)
+import           Data.List          (intercalate, maximumBy)
+import           Data.Ord           (comparing)
+import           Text.Read          (readMaybe)
 
-day11a :: Int :~> _
+day11a :: Int :~> (Int, Int)
 day11a =
   MkSol
-    { sParse = readMaybe
-    , sShow = \(_, (b, c)) -> show b <> "," <> show c
-    , sSolve = Just . best . sumsOfSize 3 . preGrid
+    { sParse = maybeToEither "Not a number" . readMaybe
+    , sShow = \(b, c) -> show b <> "," <> show c
+    , sSolve = Just . snd . best . sumsOfSize 3 . preGrid
     }
 
-day11b :: Int :~> _
+day11b :: Int :~> (Int, Int, Int)
 day11b =
   MkSol
-    { sParse = readMaybe
-    , sShow = \(_, (a, b, c)) -> intercalate "," . map show $ [a, b, c]
-    , sSolve = Just . best . allSums . preGrid
+    { sParse = maybeToEither "Not a number" . readMaybe
+    , sShow = \(a, b, c) -> intercalate "," . map show $ [a, b, c]
+    , sSolve = Just . snd . best . allSums . preGrid
     }
 
 onlyHundreds :: Int -> Int

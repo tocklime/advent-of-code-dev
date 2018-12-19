@@ -36,7 +36,7 @@ import           Text.Megaparsec.Char (letterChar)
 day07a :: M.Map Char (S.Set Char) :~> String
 day07a =
   MkSol
-    { sParse = fmap mkPrereqs <$> parseManyMaybe lineParser
+    { sParse = fmap mkPrereqs <$> parseManyEither lineParser
     , sShow = id
     , sSolve = Just . solvePuzzle
     }
@@ -44,7 +44,7 @@ day07a =
 day07b :: M.Map Char (S.Set Char) :~> Int
 day07b =
   MkSol
-    { sParse = fmap mkPrereqs <$> parseManyMaybe lineParser
+    { sParse = fmap mkPrereqs <$> parseManyEither lineParser
     , sShow = show
     , sSolve = Just . scheduleWork
     }

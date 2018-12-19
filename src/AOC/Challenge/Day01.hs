@@ -9,15 +9,15 @@ import           AOC.Solver         ((:~>) (..))
 day01a :: [Int] :~> Int
 day01a =
   MkSol
-    { sParse = Just . map read . words . filter (/= '+')
+    { sParse = return . map read . words . filter (/= '+')
     , sShow = show
-    , sSolve = Just . sum
+    , sSolve = return . sum
     }
 
 day01b :: [Int] :~> Int
 day01b =
   MkSol
-    { sParse = Just . map read . words . filter (/= '+')
+    { sParse = return . map read . words . filter (/= '+')
     , sShow = show
     , sSolve = findFirstDup . scanl (+) 0 . cycle
     }

@@ -12,7 +12,7 @@ import qualified Data.Sequence      as S
 day09a :: (Int, Int) :~> Int
 day09a =
   MkSol
-    { sParse = parseMaybe parseProb
+    { sParse = parseEither parseProb
     , sShow = show
     , sSolve = Just . winner . marbles
     }
@@ -20,7 +20,7 @@ day09a =
 day09b :: (Int, Int) :~> Int
 day09b =
   MkSol
-    { sParse = parseMaybe parseProb
+    { sParse = parseEither parseProb
     , sShow = show
     , sSolve = Just . winner . marbles . second (* 100)
     }

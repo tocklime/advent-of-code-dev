@@ -328,7 +328,7 @@ testCase emph c inp TM{..} = do
     res = runSomeSolutionWith _tmData c inp
     resStr = case res of
       Right r -> r
-      Left SEParse -> "ERROR: No parse"
+      Left (SEParse e) -> "ERROR: No parse: " <> e
       Left SESolve -> "ERROR: No solution"
     (mark, showAns, status) = case _tmAnswer of
       Just (strip->ex)    -> case res of

@@ -7,12 +7,14 @@ import           AOC.MinimalPrelude
 import           Data.Char          (toLower)
 
 day05a :: String :~> Int
-day05a = MkSol {sParse = Just, sShow = show, sSolve = Just . length . minimise}
+day05a =
+  MkSol
+    {sParse = return . strip, sShow = show, sSolve = Just . length . minimise}
 
 day05b :: String :~> Int
 day05b =
   MkSol
-    { sParse = Just
+    { sParse = return . strip
     , sShow = show
     , sSolve =
         Just . minimum . (\t -> map (minLenWithout t) ['a' .. 'z']) . minimise

@@ -28,15 +28,15 @@ analyse = (\x -> Line (has 2 x) (has 3 x)) . map length . group . sort
 day02a :: [String] :~> Int
 day02a =
   MkSol
-    { sParse = Just . lines
+    { sParse = return . lines
     , sShow = show
-    , sSolve = Just . lineProduct . mconcat . map analyse
+    , sSolve = return . lineProduct . mconcat . map analyse
     }
 
 day02b :: [String] :~> String
 day02b =
   MkSol
-    { sParse = Just . lines
+    { sParse = return . lines
     , sShow = id
     , sSolve = fmap (filter (/= '_')) . findFirstDup . concatMap expand
     }

@@ -31,7 +31,7 @@ import qualified Data.Set    as S
 day10a :: _ :~> _
 day10a =
   MkSol
-    { sParse = parseManyMaybe starParser
+    { sParse = parseManyEither starParser
     , sShow = id
     , sSolve = Just . (\s -> drawAt (findSmallestIx s) s)
     }
@@ -39,7 +39,7 @@ day10a =
 day10b :: _ :~> _
 day10b =
   MkSol
-    { sParse = parseManyMaybe starParser
+    { sParse = parseManyEither starParser
     , sShow = show
     , sSolve = Just . findSmallestIx
     }

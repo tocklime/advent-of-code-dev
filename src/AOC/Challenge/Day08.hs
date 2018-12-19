@@ -31,11 +31,11 @@ import           Control.Monad      (replicateM)
 day08a :: _ :~> _
 day08a =
   MkSol
-    {sParse = parseMaybe nodeParser, sShow = show, sSolve = Just . sumMetadata}
+    {sParse = parseEither nodeParser, sShow = show, sSolve = Just . sumMetadata}
 
 day08b :: _ :~> _
 day08b =
-  MkSol {sParse = parseMaybe nodeParser, sShow = show, sSolve = Just . value}
+  MkSol {sParse = parseEither nodeParser, sShow = show, sSolve = Just . value}
 
 data Node =
   Node [Node]

@@ -20,24 +20,16 @@
 --     types @_ :~> _@ with the actual types of inputs and outputs of the
 --     solution.  You can delete the type signatures completely and GHC
 --     will recommend what should go in place of the underscores.
-
-module AOC.Challenge.Day21 (
+module AOC.Challenge.Day21
     -- day21a
   -- , day21b
+  (
   ) where
 
 import           AOC.Prelude
 
 day21a :: _ :~> _
-day21a = MkSol
-    { sParse = Just
-    , sShow  = id
-    , sSolve = Just
-    }
+day21a = MkSol {sParse = return, sShow = id, sSolve = Just}
 
 day21b :: _ :~> _
-day21b = MkSol
-    { sParse = Just
-    , sShow  = id
-    , sSolve = Just
-    }
+day21b = MkSol {sParse = return, sShow = id, sSolve = Just}

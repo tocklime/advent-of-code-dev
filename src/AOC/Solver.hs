@@ -31,7 +31,7 @@ import           Control.DeepSeq
 import           Data.Dynamic
 import           Data.Map             (Map)
 import           GHC.Generics         (Generic)
-
+import Control.Arrow(left)
 -- | Abstracting over the type of a challenge solver to help with cleaner
 -- solutions.
 --
@@ -42,7 +42,7 @@ import           GHC.Generics         (Generic)
 -- a general @a -> 'Maybe' b@ function, and the parser and shower are used
 -- to handle the boilerplate of parsing and printing the solution.
 data a :~> b = MkSol
-    { sParse :: String -> Maybe a    -- ^ parse input into an @a@
+    { sParse :: String -> Either String a    -- ^ parse input into an @a@
     , sSolve :: (?dyno :: DynoMap)
              => a      -> Maybe b    -- ^ solve an @a@ input to a @b@ solution
     , sShow  :: b      -> String     -- ^ print out the @b@ solution in a pretty way
@@ -54,7 +54,7 @@ data SomeSolution where
     MkSomeSol :: a :~> b -> SomeSolution
 
 -- | Errors that might happen when running a ':~>' on some input.
-data SolutionError = SEParse
+data SolutionError = SEParse String
                    | SESolve
   deriving (Show, Eq, Ord, Generic)
 
@@ -69,7 +69,7 @@ withSolver' f = withSolver (Just . f)
 -- might fail.  Does no parsing or special printing treatment.
 withSolver :: (String -> Maybe String) -> String :~> String
 withSolver f = MkSol
-    { sParse = Just
+    { sParse = return
     , sShow  = id
     , sSolve = f
     }
@@ -84,8 +84,8 @@ runSolutionWith
     -> a :~> b
     -> String
     -> Either SolutionError String
-runSolutionWith dm MkSol{..} (strip->s) = do
-    x <- maybeToEither SEParse . sParse $ s
+runSolutionWith dm MkSol{..} s = do
+    x <- left SEParse . sParse $ s
     y <- maybeToEither SESolve . sSolve $ x
     pure $ sShow y
   where
