@@ -12,6 +12,7 @@ module AOC.Common where
 
 import           Control.Arrow              (first, left, second)
 import           Control.Monad              (void)
+import qualified Data.Hashable              as H
 import qualified Data.Map.Strict            as M
 import qualified Data.Set                   as S
 import           Data.Time
@@ -82,7 +83,7 @@ breakOn p (x:xs)
 
 newtype AsciiPoint = AsciiPoint
   { unAsciiPoint :: (Int, Int)
-  } deriving (Eq)
+  } deriving (Eq, H.Hashable)
 
 instance Ord AsciiPoint where
   compare (AsciiPoint (x, y)) (AsciiPoint (x', y')) = compare (y, x) (y', x')
@@ -102,6 +103,12 @@ movePoint North = AsciiPoint . second pred . unAsciiPoint
 movePoint South = AsciiPoint . second succ . unAsciiPoint
 movePoint East  = AsciiPoint . first succ . unAsciiPoint
 movePoint West  = AsciiPoint . first pred . unAsciiPoint
+
+apX :: AsciiPoint -> Int
+apX (AsciiPoint (x, _)) = x
+
+apY :: AsciiPoint -> Int
+apY (AsciiPoint (_, y)) = y
 
 turnRight :: Direction -> Direction
 turnRight North = East
@@ -124,3 +131,36 @@ asciiArtGrid f s = M.mapMaybe f cells
         | (y, line) <- zip [0 ..] $ lines s
         , (x, c) <- zip [0 ..] line
         ]
+
+manhattanDistance :: AsciiPoint -> AsciiPoint -> Int
+manhattanDistance (AsciiPoint (a, b)) (AsciiPoint (c, d)) =
+  abs (c - a) + abs (d - b)
+
+neighbourhood :: AsciiPoint -> [AsciiPoint]
+neighbourhood (AsciiPoint (x, y)) =
+  map AsciiPoint [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
+
+-- find the smallest value above low which isGood returns good for.
+-- assume there is only one transition from bad to good.
+-- assume isGood (f low) == False
+binarySearchUnbounded :: Int -> (Int -> a) -> (a -> Bool) -> (Int, a)
+binarySearchUnbounded low f isGood =
+  if isGood (f c)
+    then binarySearch low c f isGood
+    else binarySearchUnbounded c f isGood
+  where
+    c = low * 2
+
+binarySearch :: Int -> Int -> (Int -> a) -> (a -> Bool) -> (Int, a)
+binarySearch low hi f isGood
+  | isGood fc =
+    if c == low + 1
+      then (c, fc)
+      else binarySearch low c f isGood
+  | otherwise =
+    if c + 1 == hi
+      then (hi, f hi)
+      else binarySearch c hi f isGood
+  where
+    c = (low + hi) `div` 2
+    fc = f c

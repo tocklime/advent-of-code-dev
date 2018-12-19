@@ -1,4 +1,5 @@
-.stack-work/
+.stack-work
+type WorldAct/
 .stack-work-profiling/
 /*.cabal
 *~

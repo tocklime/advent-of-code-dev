@@ -97,6 +97,9 @@ library:
   - yaml
   - array
   - safe
+  - astar
+  - unordered-containers
+  - hashable
 
 executables:
   aoc-dev-2018:

@@ -13,14 +13,10 @@ import           Data.Ord           (comparing)
 import qualified Data.Sequence      as Seq
 import qualified Data.Set           as S
 
-type Coord = (Int, Int)
+inputParser :: Parser AsciiPoint
+inputParser = curry AsciiPoint <$> integer <* symbol "," <*> integer
 
-type Input = [Coord]
-
-inputParser :: Parser Coord
-inputParser = (,) <$> integer <* symbol "," <*> integer
-
-day06a :: [Coord] :~> Int
+day06a :: [AsciiPoint] :~> Int
 day06a =
   MkSol
     { sParse = parseManyEither inputParser
@@ -28,7 +24,7 @@ day06a =
     , sSolve = Just . biggestRegion
     }
 
-day06b :: [Coord] :~> Int
+day06b :: [AsciiPoint] :~> Int
 day06b =
   MkSol
     { sParse = parseManyEither inputParser
@@ -36,23 +32,17 @@ day06b =
     , sSolve = Just . nearMost
     }
 
-gridSize :: Input -> (Int, Int)
-gridSize is = (x, y)
-  where
-    x = maximum . map fst $ is
-    y = maximum . map snd $ is
+gridSize :: [AsciiPoint] -> (Int, Int)
+gridSize = maximum . map apX &&& maximum . map apY
 
 uniqueMinimumBy :: (a -> a -> Ordering) -> [a] -> Maybe a
 uniqueMinimumBy f = getOnly . head . groupBy (((EQ ==) .) . f) . sortBy f
 
-manhattanDistance :: Coord -> Coord -> Int
-manhattanDistance (a, b) (c, d) = abs (c - a) + abs (d - b)
-
-biggestRegion :: [Coord] -> Int
+biggestRegion :: [AsciiPoint] -> Int
 biggestRegion is = snd grouped
   where
     (mx, my) = gridSize is
-    coords = [(x, y) | x <- [0 .. mx + 1], y <- [0 .. my + 1]]
+    coords = [AsciiPoint (x, y) | x <- [0 .. mx + 1], y <- [0 .. my + 1]]
     maybeClosest c = uniqueMinimumBy (comparing (manhattanDistance c)) is
     dists =
       [ (x, c)
@@ -68,29 +58,26 @@ biggestRegion is = snd grouped
       filter ((`notElem` infinites) . fst) .
       map (fst . head &&& length) . groupBy ((==) `on` fst) . sortOn fst $
       dists
-    isEdge (x, y) = x == 0 || y == 0 || x == mx + 1 || y == my + 1
+    isEdge (AsciiPoint (x, y)) = x == 0 || y == 0 || x == mx + 1 || y == my + 1
 
-nearMost :: [Coord] -> Int
+nearMost :: [AsciiPoint] -> Int
 nearMost is = S.size (expand initialSet initialSet)
   where
-    xMid = listMiddle . sort . map fst $ is
-    yMid = listMiddle . sort . map snd $ is
-    initialSet :: S.Set Coord
-    initialSet = S.fromList [(x, y) | x <- xMid, y <- yMid]
-    expand :: S.Set Coord -> S.Set Coord -> S.Set Coord
+    xMid = listMiddle . sort . map apX $ is
+    yMid = listMiddle . sort . map apY $ is
+    initialSet :: S.Set AsciiPoint
+    initialSet = S.fromList [AsciiPoint (x, y) | x <- xMid, y <- yMid]
+    expand :: S.Set AsciiPoint -> S.Set AsciiPoint -> S.Set AsciiPoint
     expand inArea fringe
       | S.null new = inArea
       | otherwise = expand (S.union new inArea) new
       where
-        candidates :: S.Set Coord
-        candidates = S.unions $ S.toList $ S.map neighbours fringe
-        new :: S.Set Coord
+        candidates :: S.Set AsciiPoint
+        candidates = S.unions $ S.map (S.fromList . neighbourhood) fringe
+        new :: S.Set AsciiPoint
         new =
           S.filter ((< 10000) . totalDistance is) $
           S.difference candidates inArea
-        neighbours :: Coord -> S.Set Coord
-        neighbours (x, y) =
-          S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
 
 listMiddle :: Enum a => [a] -> [a]
 listMiddle x =
@@ -101,5 +88,5 @@ listMiddle x =
     s = Seq.fromList x
     l = Seq.length s
 
-totalDistance :: [Coord] -> Coord -> Int
+totalDistance :: [AsciiPoint] -> AsciiPoint -> Int
 totalDistance points c = sum $ map (manhattanDistance c) points
