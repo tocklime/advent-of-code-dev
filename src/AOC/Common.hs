@@ -26,7 +26,7 @@ parseEither :: Parser a -> String -> Either String a
 parseEither p i = left errorBundlePretty $ Text.Megaparsec.parse p "Input" i
 
 parseManyEither :: Parser a -> String -> Either String [a]
-parseManyEither p = parseEither (Text.Megaparsec.many p)
+parseManyEither p = parseEither (Text.Megaparsec.many p <* eof)
 
 findFirstDup :: (Ord a) => [a] -> Maybe a
 findFirstDup = go S.empty
@@ -104,6 +104,10 @@ movePoint South = AsciiPoint . second succ . unAsciiPoint
 movePoint East  = AsciiPoint . first succ . unAsciiPoint
 movePoint West  = AsciiPoint . first pred . unAsciiPoint
 
+rectanglePoints :: AsciiPoint -> AsciiPoint -> [AsciiPoint]
+rectanglePoints (AsciiPoint (a, b)) (AsciiPoint (c, d)) =
+  [AsciiPoint (x, y) | x <- [a .. c], y <- [b .. d]]
+
 apX :: AsciiPoint -> Int
 apX (AsciiPoint (x, _)) = x
 
@@ -164,3 +168,13 @@ binarySearch low hi f isGood
   where
     c = (low + hi) `div` 2
     fc = f c
+
+boundingPoint :: [AsciiPoint] -> AsciiPoint
+boundingPoint = foldr step (AsciiPoint (0, 0))
+  where
+    step (AsciiPoint (a, b)) (AsciiPoint (c, d)) = AsciiPoint (max a c, max b d)
+
+drawAsciiGrid :: AsciiPoint -> (AsciiPoint -> Char) -> String
+drawAsciiGrid (AsciiPoint (maxX, maxY)) cellFunc =
+  '\n' :
+  unlines [[cellFunc (AsciiPoint (x, y)) | x <- [0 .. maxX]] | y <- [0 .. maxY]]
