@@ -1,38 +1,17 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
--- |
--- Module      : AOC.Challenge.Day17
--- License     : BSD3
---
--- Stability   : experimental
--- Portability : non-portable
---
--- Day 17.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 module AOC.Challenge.Day17
   ( day17a
   , day17b
+  , drawWorld17
   ) where
 
-import           AOC.Prelude
+import           AOC.MinimalPrelude
 import           Control.Monad.Reader
-import           Data.Bool            (bool)
-import qualified Data.Map.Strict      as M
+import           Control.Monad.Trans.State
+import qualified Data.Map.Strict           as M
+import           Data.Maybe                (isJust)
 import           Text.Megaparsec
-import           Text.Megaparsec.Char
 
-day17a :: _ :~> _
+day17a :: World :~> Int
 day17a =
   MkSol
     { sParse = fmap (initWorld . concat) <$> parseManyEither parseLine
@@ -40,7 +19,7 @@ day17a =
     , sSolve = Just . countCells (/= Clay) . fillWorld
     }
 
-day17b :: _ :~> _
+day17b :: World :~> Int
 day17b =
   MkSol
     { sParse = fmap (initWorld . concat) <$> parseManyEither parseLine
@@ -80,8 +59,8 @@ drawCell (Just RunningWater) = '|'
 drawCell (Just Clay)         = '#'
 drawCell Nothing             = ' '
 
-drawWorld :: World -> String
-drawWorld things =
+drawWorld17 :: World -> String
+drawWorld17 things =
   drawAsciiGrid
     (boundingPoint . M.keys $ things)
     (drawCell . (`M.lookup` things))
@@ -129,12 +108,14 @@ data Edge
 
 findEdge ::
      (AsciiPoint -> AsciiPoint) -> AsciiPoint -> WorldStep (AsciiPoint, Edge)
-findEdge iter p = gets (M.lookup (movePoint South p)) >>= \case
+findEdge iter p =
+  gets (M.lookup (movePoint South p)) >>= \case
     Nothing -> return (p, Overspill)
     Just RunningWater -> return (p, Wall RunningWater)
-    _ -> gets (M.lookup p) >>= \case
+    _ ->
+      gets (M.lookup p) >>= \case
         Just Clay -> return (p, Wall Clay)
-        _         -> findEdge iter (iter p)
+        _ -> findEdge iter (iter p)
 
 fill :: AsciiPoint -> AsciiPoint -> Cell -> WorldStep ()
 fill a b c = modify' $ flip (foldr (`M.insert` c)) $ rectanglePoints a b

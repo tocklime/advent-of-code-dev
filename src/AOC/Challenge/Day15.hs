@@ -20,7 +20,7 @@
 module AOC.Challenge.Day15
   ( day15a
   , day15b
-  , drawWorld
+  , drawWorld15
   ) where
 
 import           AOC.MinimalPrelude
@@ -81,8 +81,8 @@ thingStats (p, Fighter Goblin x) = Just $ "G" <> show x <> "@" <> show p
 thingStats (p, Fighter Elf x)    = Just $ "E" <> show x <> "@" <> show p
 thingStats _                     = Nothing
 
-drawWorld :: World -> String
-drawWorld World {..} =
+drawWorld15 :: World -> String
+drawWorld15 World {..} =
   unlines $
   ("The world at age " <> show age <> " stop on elf death: " <>
    show stopOnElfDeath <>
